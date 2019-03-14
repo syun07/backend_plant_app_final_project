@@ -1,4 +1,6 @@
 class PlantsController < ApplicationController
+	before_action :authorized, except: [:index]
+
   def index
 		@plants = Plant.all
 		render json: @plants, status: :ok
