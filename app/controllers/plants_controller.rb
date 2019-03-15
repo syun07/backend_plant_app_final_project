@@ -1,16 +1,23 @@
 class PlantsController < ApplicationController
-	before_action :authorized, except: [:index, :fetch_all, :fetch_individual]
+	before_action :authorized, except: [:index, :fetch_individual]
 
 	def fetch_individual
-		response = RestClient.get("https://trefle.io/api/plants?token=a1I5V2VCUlh0UHJ0N3MvTG90dU9YQT09&complete_data=true&page_size=100")
+		response = RestClient.get("https://trefle.io/api/plants?token=a1I5V2VCUlh0UHJ0N3MvTG90dU9YQT09&complete_data=true&page_size=50")
 		@api_data = JSON.parse(response.body)
 		
 		@plant_data = []
 		@api_data.each do |plant|
-			fetchPlants = RestClient.get(plant['link'] + '?token=a1I5V2VCUlh0UHJ0N3MvTG90dU9YQT09')
-			@plant_data << JSON.parse(fetchPlants.body)
+			fetch_plants = RestClient.get(plant['link'] + '?token=a1I5V2VCUlh0UHJ0N3MvTG90dU9YQT09')
+			@plant_data << JSON.parse(fetch_plants.body)
 		end
-		render json: @plant_data, status: :ok
+
+		@completed_plants = []
+		@plant_data.each do |plant|
+			if plant['common_name'] && plant['scientific_name'] && plant['images'].length > 0
+				@completed_plants << plant
+			end
+		end
+		render json: @completed_plants, status: :ok
 	end
 
   def index
